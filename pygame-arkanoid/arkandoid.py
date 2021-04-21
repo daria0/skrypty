@@ -25,7 +25,6 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, pressed_keys):
         if pressed_keys[K_LEFT]:
-            # print("pressed left")
             self.rect.move_ip(-3, 0)
         if pressed_keys[K_RIGHT]:
             self.rect.move_ip(3, 0)
@@ -78,9 +77,6 @@ klocek = Klocek(40, 40)
 ball = Ball(315, 440)
 
 health_icons = [Health(100, 15), Health(110, 15), Health(120, 15)]
-# health_icon1 = Health(100, 15)
-# health_icon2 = Health(110, 15)
-# health_icon3 = Health(120, 15)
 
 klocki = pygame.sprite.Group()
 klocki.add(klocek)
@@ -90,9 +86,6 @@ for health_icon in health_icons:
     health.add(health_icon)
 
 font = pygame.font.SysFont('Arial MS', 20)
-
-
-# smallText = pygame.font.Font("freesansbold.ttf", 20)
 
 
 def generate_level():
