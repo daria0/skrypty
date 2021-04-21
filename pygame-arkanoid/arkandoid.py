@@ -134,7 +134,7 @@ while uruchomiona:
         uruchomiona = False
 
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == QUIT:
             uruchomiona = False
         elif event.type == KEYDOWN:
             if event.key in (K_ESCAPE, K_p):
@@ -152,20 +152,20 @@ while uruchomiona:
     else:
         screen.fill((0, 0, 0))
 
-    for klocek in klocki:
-        screen.blit(klocek.surf, klocek.rect)
-    screen.blit(player.surf, player.rect)
-    screen.blit(ball.surf, ball.rect)
+        for klocek in klocki:
+            screen.blit(klocek.surf, klocek.rect)
+        screen.blit(player.surf, player.rect)
+        screen.blit(ball.surf, ball.rect)
 
-    screen.blit(font.render('HEALTH:', False, (255, 255, 255)), (20, 10))
-    for n, health_icon in enumerate(health):
-        if n < HEALTH_LVL:
-            screen.blit(health_icon.surf, health_icon.rect)
+        screen.blit(font.render('HEALTH:', False, (255, 255, 255)), (20, 10))
+        for n, health_icon in enumerate(health):
+            if n < HEALTH_LVL:
+                screen.blit(health_icon.surf, health_icon.rect)
 
-    if pygame.sprite.spritecollideany(ball, klocki):
-        delete_klocek = pygame.sprite.spritecollideany(ball, klocki)
-        delete_klocek.kill()
-        # usuniecie klocka
+        if pygame.sprite.spritecollideany(ball, klocki):
+            delete_klocek = pygame.sprite.spritecollideany(ball, klocki)
+            delete_klocek.kill()
+            # usuniecie klocka
 
     clock.tick(60)
     pygame.display.flip()
