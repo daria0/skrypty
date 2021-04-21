@@ -5,6 +5,7 @@ pygame.init()
 
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
+BORDER = 10
 
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 clock = pygame.time.Clock()
@@ -12,6 +13,9 @@ clock = pygame.time.Clock()
 uruchomiona = True
 pause = False
 HEALTH_LVL = 3
+ball_speed = 2
+ball_x = 'left'
+ball_y = 'up'
 
 
 class Player(pygame.sprite.Sprite):
@@ -54,6 +58,30 @@ class Ball(pygame.sprite.Sprite):
         self.surf.fill((255, 255, 255))
         self.surf = pygame.image.load("images/pilka.png").convert()
         self.rect = self.surf.get_rect(center=(x, y))
+        self.x = x
+        self.y = y
+
+    def update(self):
+        global ball, ball_x, ball_y, HEALTH_LVL
+        if ball_x == "left":
+            ball.x -= ball_speed
+            if ball.x < BORDER:
+                ball_x = "right"
+        if ball_y == "down":
+            ball.y += ball_speed
+            if ball.y >= SCREEN_HEIGHT - BORDER:
+                ball_x = "left"
+                ball_y = "up"
+                HEALTH_LVL -= 1
+        if ball_y == "up":
+            ball.y -= ball_speed
+            if ball.y < BORDER:
+                ball_y = 'down'
+        if ball_x == "right":
+            ball.x += ball_speed
+            if ball.x > SCREEN_WIDTH - BORDER:
+                ball_x = "left"
+        self.rect = self.surf.get_rect(center=(self.x, self.y))
 
 
 class Health(pygame.sprite.Sprite):
@@ -86,7 +114,6 @@ for health_icon in health_icons:
     health.add(health_icon)
 
 font = pygame.font.SysFont('Arial MS', 20)
-
 
 def generate_level():
     pass
@@ -166,6 +193,8 @@ while uruchomiona:
             delete_klocek = pygame.sprite.spritecollideany(ball, klocki)
             delete_klocek.kill()
             # usuniecie klocka
+
+        ball.update()
 
     clock.tick(60)
     pygame.display.flip()
