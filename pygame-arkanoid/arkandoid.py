@@ -139,7 +139,7 @@ def generate_level():
         for brick in brick_locations:
             bricks.add(brick)
 
-    ball_speed += GAME_LVL
+    ball_speed += 0.5 * GAME_LVL
 
 
 def text_objects(font, text, color, text_center):
@@ -273,6 +273,8 @@ while running:
         for n, health_icon in enumerate(health):
             if n < HEALTH_LVL:
                 screen.blit(health_icon.surf, health_icon.rect)
+        screen.blit(font.render('LEVEL: ' + str(LVL), False, (255, 255, 255)), (150, 10))
+        screen.blit(font.render('BALL SPEED: ' + str(ball_speed), False, (255, 255, 255)), (230, 10))
 
         detect_brick_collision()
         ball.update()
