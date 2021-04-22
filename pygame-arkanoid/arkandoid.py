@@ -1,6 +1,7 @@
 import random
 import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT, K_p
+from enum import Enum
 
 pygame.init()
 
@@ -19,9 +20,18 @@ uruchomiona = True
 pause = False
 HEALTH_LVL = 3
 ball_speed = 2
-ball_x = 'left'
-ball_y = 'up'
 font = pygame.font.SysFont('Arial MS', 20)
+
+
+class BallDirections(Enum):
+    x_LEFT = 1
+    x_RIGHT = 2
+    y_UP = 3
+    y_DOWN = 4
+
+
+ball_x = BallDirections.x_LEFT
+ball_y = BallDirections.y_UP
 
 
 class Player(pygame.sprite.Sprite):
@@ -71,24 +81,24 @@ class Ball(pygame.sprite.Sprite):
 
     def update(self):
         global ball, ball_x, ball_y, HEALTH_LVL
-        if ball_x == "left":
+        if ball_x == BallDirections.x_LEFT:
             ball.x -= ball_speed
             if ball.x < BALL_R:
-                ball_x = "right"
-        if ball_y == "down":
+                ball_x = BallDirections.x_RIGHT
+        if ball_y == BallDirections.y_DOWN:
             ball.y += ball_speed
             if ball.y >= SCREEN_HEIGHT - BALL_R:
-                ball_x = "left"
-                ball_y = "up"
+                ball_x = BallDirections.x_LEFT
+                ball_y = BallDirections.y_UP
                 HEALTH_LVL -= 1
-        if ball_y == "up":
+        if ball_y == BallDirections.y_UP:
             ball.y -= ball_speed
             if ball.y < GAME_BORDER:
-                ball_y = 'down'
-        if ball_x == "right":
+                ball_y = BallDirections.y_DOWN
+        if ball_x == BallDirections.x_RIGHT:
             ball.x += ball_speed
             if ball.x > SCREEN_WIDTH - BALL_R:
-                ball_x = "left"
+                ball_x = BallDirections.x_LEFT
         self.rect = self.surf.get_rect(center=(self.x, self.y))
 
 
@@ -110,16 +120,12 @@ player = Player(305, 450)
 
 ball = Ball(315, 440)
 
-# brick = Brick(40, 40)
-
-bricks = pygame.sprite.Group()
-# bricks.add(brick)
-
-# health_icons = [Health(100, 15), Health(110, 15), Health(120, 15)]
 health_icons = [Health(100 + 10 * i, 15) for i in range(HEALTH_LVL)]
 health = pygame.sprite.Group()
 for health_icon in health_icons:
     health.add(health_icon)
+
+bricks = pygame.sprite.Group()
 
 
 def generate_level():
@@ -131,15 +137,11 @@ def generate_level():
         print(brick_pattern)
         print(len(brick_pattern))
         brick_locations = [
-            Brick(GAME_BORDER + i * BRICK_WIDTH, 2*GAME_BORDER + (row * BRICK_HEIGHT))
+            Brick(GAME_BORDER + i * BRICK_WIDTH, 2 * GAME_BORDER + (row * BRICK_HEIGHT))
             for i in range(len(brick_pattern)) if brick_pattern[i] == 1]
         print(len(brick_locations))
         for brick in brick_locations:
             bricks.add(brick)
-
-
-# def update_ball_position():
-#     pass
 
 
 def text_objects(font, text, color, text_center):
@@ -178,7 +180,7 @@ def detect_collision():
     global ball, player, ball_x, ball_y
     if ball.rect.colliderect(player):
         print("Player-ball contact detected")
-        ball_y = "up"
+        ball_y = BallDirections.y_UP
 
 
 def detect_brick_collision():
@@ -188,22 +190,22 @@ def detect_brick_collision():
         brick_to_delete.kill()
         # usuniecie klocka
 
-        if ball_y == "up":
+        if ball_y == BallDirections.y_UP:
             if ball.y == (brick.y + 20 - ball_speed):
-                ball_y = "down"
+                ball_y = BallDirections.y_DOWN
             else:
-                if ball_x == "left":
-                    ball_x = "right"
+                if ball_x == BallDirections.x_LEFT:
+                    ball_x = BallDirections.x_RIGHT
                 else:
-                    ball_x = "left"
+                    ball_x = BallDirections.x_LEFT
         else:
             if ball.y <= brick.y:
-                ball_y = "up"
+                ball_y = BallDirections.y_UP
             else:
-                if ball_x == "left":
-                    ball_x = "right"
+                if ball_x == BallDirections.x_LEFT:
+                    ball_x = BallDirections.x_RIGHT
                 else:
-                    ball_x = "left"
+                    ball_x = BallDirections.x_LEFT
 
 
 generate_level()
