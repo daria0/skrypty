@@ -10,6 +10,7 @@ BORDER = 10
 GAME_BORDER = 40
 BRICK_WIDTH = 20
 BRICK_HEIGHT = 10
+BALL_R = 5
 
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 clock = pygame.time.Clock()
@@ -51,6 +52,8 @@ class Brick(pygame.sprite.Sprite):
         self.surf = pygame.Surface((BRICK_WIDTH, BRICK_HEIGHT))
         self.surf = pygame.image.load("images/klocek.png").convert()
         self.rect = self.surf.get_rect(center=(x, y))
+        self.x = x
+        self.y = y
 
     def set_color(self, color):
         self.surf.fill(color)
@@ -59,7 +62,7 @@ class Brick(pygame.sprite.Sprite):
 class Ball(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
-        self.surf = pygame.Surface((5, 5))
+        self.surf = pygame.Surface((BALL_R, BALL_R))
         self.surf.fill((255, 255, 255))
         self.surf = pygame.image.load("images/pilka.png").convert()
         self.rect = self.surf.get_rect(center=(x, y))
@@ -70,21 +73,21 @@ class Ball(pygame.sprite.Sprite):
         global ball, ball_x, ball_y, HEALTH_LVL
         if ball_x == "left":
             ball.x -= ball_speed
-            if ball.x < BORDER:
+            if ball.x < BALL_R:
                 ball_x = "right"
         if ball_y == "down":
             ball.y += ball_speed
-            if ball.y >= SCREEN_HEIGHT - BORDER:
+            if ball.y >= SCREEN_HEIGHT - BALL_R:
                 ball_x = "left"
                 ball_y = "up"
                 HEALTH_LVL -= 1
         if ball_y == "up":
             ball.y -= ball_speed
-            if ball.y < BORDER:
+            if ball.y < GAME_BORDER:
                 ball_y = 'down'
         if ball_x == "right":
             ball.x += ball_speed
-            if ball.x > SCREEN_WIDTH - BORDER:
+            if ball.x > SCREEN_WIDTH - BALL_R:
                 ball_x = "left"
         self.rect = self.surf.get_rect(center=(self.x, self.y))
 
@@ -128,7 +131,7 @@ def generate_level():
         print(brick_pattern)
         print(len(brick_pattern))
         brick_locations = [
-            Brick(GAME_BORDER + i * BRICK_WIDTH, GAME_BORDER + (row * BRICK_HEIGHT))
+            Brick(GAME_BORDER + i * BRICK_WIDTH, 2*GAME_BORDER + (row * BRICK_HEIGHT))
             for i in range(len(brick_pattern)) if brick_pattern[i] == 1]
         print(len(brick_locations))
         for brick in brick_locations:
@@ -184,6 +187,23 @@ def detect_brick_collision():
         brick_to_delete = pygame.sprite.spritecollideany(ball, bricks)
         brick_to_delete.kill()
         # usuniecie klocka
+
+        if ball_y == "up":
+            if ball.y == (brick.y + 20 - ball_speed):
+                ball_y = "down"
+            else:
+                if ball_x == "left":
+                    ball_x = "right"
+                else:
+                    ball_x = "left"
+        else:
+            if ball.y <= brick.y:
+                ball_y = "up"
+            else:
+                if ball_x == "left":
+                    ball_x = "right"
+                else:
+                    ball_x = "left"
 
 
 generate_level()
