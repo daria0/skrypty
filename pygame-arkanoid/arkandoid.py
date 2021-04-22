@@ -21,6 +21,8 @@ paused = False
 game_lost = False
 game_won = False
 lvl_won = True
+MAX_LVL = 5
+LVL = 0
 HEALTH_LVL = 3
 GAME_LVL = 1
 ball_speed = 1
@@ -221,8 +223,9 @@ def detect_brick_collision():
 
 
 def next_level():
-    global lvl_won
+    global lvl_won, LVL
     lvl_won = False
+    LVL += 1
     generate_level()
 
 
@@ -234,7 +237,10 @@ while running:
         game_lost = True
 
     if len(bricks) == 0 and HEALTH_LVL > 0:
-        lvl_won = True
+        if LVL >= MAX_LVL:
+            game_won = True
+        else:
+            lvl_won = True
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -255,6 +261,12 @@ while running:
     elif game_lost:
         screen.fill((0, 0, 0))
         button("YOU LOST!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
+               (0, 0, 255), (0, 0, 255))
+        button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
+               50, (255, 0, 0), (0, 0, 255), quit_game)
+    elif game_won:
+        screen.fill((0, 0, 0))
+        button("YOU WON!!!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
                (0, 0, 255), (0, 0, 255))
         button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
                50, (255, 0, 0), (0, 0, 255), quit_game)
