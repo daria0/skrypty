@@ -2,32 +2,13 @@ import random
 import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT, K_p
 from enum import Enum
+from game_settings import *
 
 pygame.init()
 
-SCREEN_WIDTH = 640
-SCREEN_HEIGHT = 480
-BORDER = 10
-GAME_BORDER = 40
-BRICK_WIDTH = 20
-BRICK_HEIGHT = 10
-BALL_R = 5
-
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 clock = pygame.time.Clock()
-
-running = True
-paused = False
-game_lost = False
-game_won = False
-lvl_won = False
-MAX_LVL = 5
-LVL = 0
-HEALTH_LVL = 3
-GAME_LVL = 1
-ball_speed = 1
 font = pygame.font.SysFont('Arial MS', 20)
-
 
 class BallDirections(Enum):
     x_LEFT = 1
