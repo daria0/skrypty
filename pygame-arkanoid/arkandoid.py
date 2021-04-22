@@ -16,6 +16,7 @@ HEALTH_LVL = 3
 ball_speed = 2
 ball_x = 'left'
 ball_y = 'up'
+font = pygame.font.SysFont('Arial MS', 20)
 
 
 class Player(pygame.sprite.Sprite):
@@ -39,7 +40,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.right = SCREEN_WIDTH - 30
 
 
-class Klocek(pygame.sprite.Sprite):
+class Brick(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -47,7 +48,7 @@ class Klocek(pygame.sprite.Sprite):
         self.surf = pygame.image.load("images/klocek.png").convert()
         self.rect = self.surf.get_rect(center=(x, y))
 
-    def set_kolor(self, color):
+    def set_color(self, color):
         self.surf.fill(color)
 
 
@@ -92,7 +93,7 @@ class Health(pygame.sprite.Sprite):
         self.surf = pygame.image.load("images/pilka.png").convert()
         self.rect = self.surf.get_rect(center=(x, y))
 
-    def set_kolor(self, color):
+    def set_color(self, color):
         self.surf.fill(color)
 
 
@@ -100,27 +101,25 @@ pygame.display.set_caption("Arkanoid d_siemieniuk")
 
 player = Player(305, 450)
 
-klocek = Klocek(40, 40)
+brick = Brick(40, 40)
 
 ball = Ball(315, 440)
 
 health_icons = [Health(100, 15), Health(110, 15), Health(120, 15)]
 
-klocki = pygame.sprite.Group()
-klocki.add(klocek)
+bricks = pygame.sprite.Group()
+bricks.add(brick)
 
 health = pygame.sprite.Group()
 for health_icon in health_icons:
     health.add(health_icon)
 
-font = pygame.font.SysFont('Arial MS', 20)
-
 def generate_level():
     pass
 
 
-def update_ball_position():
-    pass
+# def update_ball_position():
+#     pass
 
 
 def text_objects(font, text, color, text_center):
@@ -179,8 +178,8 @@ while uruchomiona:
     else:
         screen.fill((0, 0, 0))
 
-        for klocek in klocki:
-            screen.blit(klocek.surf, klocek.rect)
+        for brick in bricks:
+            screen.blit(brick.surf, brick.rect)
         screen.blit(player.surf, player.rect)
         screen.blit(ball.surf, ball.rect)
 
@@ -189,9 +188,9 @@ while uruchomiona:
             if n < HEALTH_LVL:
                 screen.blit(health_icon.surf, health_icon.rect)
 
-        if pygame.sprite.spritecollideany(ball, klocki):
-            delete_klocek = pygame.sprite.spritecollideany(ball, klocki)
-            delete_klocek.kill()
+        if pygame.sprite.spritecollideany(ball, bricks):
+            brick_to_delete = pygame.sprite.spritecollideany(ball, bricks)
+            brick_to_delete.kill()
             # usuniecie klocka
 
         ball.update()
