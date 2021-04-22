@@ -16,8 +16,8 @@ BALL_R = 5
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 clock = pygame.time.Clock()
 
-uruchomiona = True
-pause = False
+running = True
+paused = False
 HEALTH_LVL = 3
 ball_speed = 2
 font = pygame.font.SysFont('Arial MS', 20)
@@ -162,14 +162,14 @@ def button(text, pos_x, pos_y, width, heigth, color, hover_color, action):
                               (pos_x + width / 2, pos_y + heigth / 2)))
 
 
-def unpause():
-    global pause
-    pause = False
+def resume():
+    global paused
+    paused = False
 
 
-def quitgame():
-    global uruchomiona
-    uruchomiona = False
+def quit_game():
+    global running
+    running = False
 
 
 # pygame.mixer.music.load("sounds/intro.mp3")
@@ -210,27 +210,27 @@ def detect_brick_collision():
 
 generate_level()
 
-while uruchomiona:
+while running:
 
     if HEALTH_LVL <= 0:
-        uruchomiona = False
+        running = False
 
     for event in pygame.event.get():
         if event.type == QUIT:
-            uruchomiona = False
+            running = False
         elif event.type == KEYDOWN:
             if event.key in (K_ESCAPE, K_p):
-                pause = not pause
+                paused = not paused
 
     pressed_keys = pygame.key.get_pressed()
     player.update(pressed_keys)
 
-    if pause:
+    if paused:
         screen.fill((255, 255, 255))
         button("CONTINUE", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-               (0, 255, 0), (0, 0, 255), unpause)
+               (0, 255, 0), (0, 0, 255), resume)
         button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-               50, (255, 0, 0), (0, 0, 255), quitgame)
+               50, (255, 0, 0), (0, 0, 255), quit_game)
     else:
         screen.fill((0, 0, 0))
 
