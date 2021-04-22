@@ -10,6 +10,7 @@ screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('Arial MS', 20)
 
+
 class BallDirections(Enum):
     x_LEFT = 1
     x_RIGHT = 2
@@ -127,12 +128,13 @@ def generate_level():
     ball = Ball(315, 440)
     bricks = pygame.sprite.Group()
     rows = 7
-    max_number_of_bricks = int((SCREEN_WIDTH - 2 * GAME_BORDER) / BRICK_WIDTH)
+    max_number_of_bricks = int((SCREEN_WIDTH - BRICK_WIDTH) / BRICK_WIDTH)
 
     for row in range(rows):
         brick_pattern = [random.randrange(2) for i in range(max_number_of_bricks + 1)]
         brick_locations = [
-            Brick(GAME_BORDER + i * BRICK_WIDTH, 2 * GAME_BORDER + (row * BRICK_HEIGHT))
+            Brick(1 / 2 * BRICK_WIDTH + i * BRICK_WIDTH,
+                  GAME_BORDER + (row * BRICK_HEIGHT))
             for i in range(len(brick_pattern)) if brick_pattern[i] == 1]
         for brick in brick_locations:
             bricks.add(brick)
@@ -208,6 +210,8 @@ def next_level():
     lvl_won = False
     LVL += 1
     generate_level()
+    print("LEVEL: ", LVL)
+    print("ball speed: ", ball_speed)
 
 
 next_level()
