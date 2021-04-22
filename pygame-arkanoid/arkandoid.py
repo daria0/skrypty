@@ -1,3 +1,4 @@
+import random
 import pygame
 from pygame.locals import KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT, K_p
 
@@ -6,6 +7,9 @@ pygame.init()
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 BORDER = 10
+GAME_BORDER = 40
+BRICK_WIDTH = 20
+BRICK_HEIGHT = 10
 
 screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 clock = pygame.time.Clock()
@@ -44,7 +48,7 @@ class Brick(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.surf = pygame.Surface((20, 10))
+        self.surf = pygame.Surface((BRICK_WIDTH, BRICK_HEIGHT))
         self.surf = pygame.image.load("images/klocek.png").convert()
         self.rect = self.surf.get_rect(center=(x, y))
 
@@ -101,21 +105,34 @@ pygame.display.set_caption("Arkanoid d_siemieniuk")
 
 player = Player(305, 450)
 
-brick = Brick(40, 40)
-
 ball = Ball(315, 440)
 
-health_icons = [Health(100, 15), Health(110, 15), Health(120, 15)]
+# brick = Brick(40, 40)
 
 bricks = pygame.sprite.Group()
-bricks.add(brick)
+# bricks.add(brick)
 
+# health_icons = [Health(100, 15), Health(110, 15), Health(120, 15)]
+health_icons = [Health(100 + 10 * i, 15) for i in range(HEALTH_LVL)]
 health = pygame.sprite.Group()
 for health_icon in health_icons:
     health.add(health_icon)
 
+
 def generate_level():
-    pass
+    global bricks
+    rows = 7
+    max_number_of_bricks = int((SCREEN_WIDTH - 2 * GAME_BORDER) / BRICK_WIDTH)
+    for row in range(rows):
+        brick_pattern = [random.randrange(2) for i in range(max_number_of_bricks + 1)]
+        print(brick_pattern)
+        print(len(brick_pattern))
+        brick_locations = [
+            Brick(GAME_BORDER + i * BRICK_WIDTH, GAME_BORDER + (row * BRICK_HEIGHT))
+            for i in range(len(brick_pattern)) if brick_pattern[i] == 1]
+        print(len(brick_locations))
+        for brick in brick_locations:
+            bricks.add(brick)
 
 
 # def update_ball_position():
@@ -154,6 +171,23 @@ def quitgame():
 # pygame.mixer.music.set_volume(0.2)
 # pygame.mixer.music.play(-1)
 
+def detect_collision():
+    global ball, player, ball_x, ball_y
+    if ball.rect.colliderect(player):
+        print("Player-ball contact detected")
+        ball_y = "up"
+
+
+def detect_brick_collision():
+    global ball_x, ball_y
+    if pygame.sprite.spritecollideany(ball, bricks):
+        brick_to_delete = pygame.sprite.spritecollideany(ball, bricks)
+        brick_to_delete.kill()
+        # usuniecie klocka
+
+
+generate_level()
+
 while uruchomiona:
 
     if HEALTH_LVL <= 0:
@@ -188,12 +222,9 @@ while uruchomiona:
             if n < HEALTH_LVL:
                 screen.blit(health_icon.surf, health_icon.rect)
 
-        if pygame.sprite.spritecollideany(ball, bricks):
-            brick_to_delete = pygame.sprite.spritecollideany(ball, bricks)
-            brick_to_delete.kill()
-            # usuniecie klocka
-
+        detect_brick_collision()
         ball.update()
+        detect_collision()
 
     clock.tick(60)
     pygame.display.flip()
