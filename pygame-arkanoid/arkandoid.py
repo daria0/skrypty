@@ -134,12 +134,9 @@ def generate_level():
     max_number_of_bricks = int((SCREEN_WIDTH - 2 * GAME_BORDER) / BRICK_WIDTH)
     for row in range(rows):
         brick_pattern = [random.randrange(2) for i in range(max_number_of_bricks + 1)]
-        print(brick_pattern)
-        print(len(brick_pattern))
         brick_locations = [
             Brick(GAME_BORDER + i * BRICK_WIDTH, 2 * GAME_BORDER + (row * BRICK_HEIGHT))
             for i in range(len(brick_pattern)) if brick_pattern[i] == 1]
-        print(len(brick_locations))
         for brick in brick_locations:
             bricks.add(brick)
 
@@ -179,16 +176,15 @@ def quit_game():
 def detect_collision():
     global ball, player, ball_x, ball_y
     if ball.rect.colliderect(player):
-        print("Player-ball contact detected")
         ball_y = BallDirections.y_UP
 
 
 def detect_brick_collision():
     global ball_x, ball_y
+
     if pygame.sprite.spritecollideany(ball, bricks):
         brick_to_delete = pygame.sprite.spritecollideany(ball, bricks)
         brick_to_delete.kill()
-        # usuniecie klocka
 
         if ball_y == BallDirections.y_UP:
             if ball.y == (brick.y + 20 - ball_speed):
