@@ -62,7 +62,7 @@ class Ball(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.surf = pygame.Surface((BALL_R, BALL_R))
-        self.surf.fill((255, 255, 255))
+        self.surf.fill(white)
         self.surf = pygame.image.load("images/pilka.png").convert()
         self.rect = self.surf.get_rect(center=(x, y))
         self.x = x
@@ -147,17 +147,18 @@ def text_objects(font, text, color, text_center):
     return rendered, rendered.get_rect(center=text_center)
 
 
-def button(text, pos_x, pos_y, width, heigth, color, hover_color, action=None):
+def button(text, pos_x, pos_y, width, height, color, hover_color, action=None,
+           text_color=black):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
-    if pos_x + width > mouse[0] > pos_x and pos_y + heigth > mouse[1] > pos_y:
-        pygame.draw.rect(screen, hover_color, (pos_x, pos_y, width, heigth))
+    if pos_x + width > mouse[0] > pos_x and pos_y + height > mouse[1] > pos_y:
+        pygame.draw.rect(screen, hover_color, (pos_x, pos_y, width, height))
         if click[0] == 1 and action is not None:
             action()
     else:
-        pygame.draw.rect(screen, color, (pos_x, pos_y, width, heigth))
-    screen.blit(*text_objects(font, text, (0, 0, 0),
-                              (pos_x + width / 2, pos_y + heigth / 2)))
+        pygame.draw.rect(screen, color, (pos_x, pos_y, width, height))
+    screen.blit(*text_objects(font, text, text_color,
+                              (pos_x + width / 2, pos_y + height / 2)))
 
 
 def resume():
@@ -215,17 +216,21 @@ def next_level():
 
 
 def display_main_menu():
-    global game_lost, game_won, lvl_won
+    global game_lost, game_won, lvl_won, paused, display_menu
 
-    screen.fill((0, 0, 0))
-    button("NEW GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-           (0, 255, 0), (0, 0, 255), play_game)
-    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-           50, (255, 0, 0), (0, 0, 255), quit_game)
-
+    display_menu = True
     game_lost = False
     game_won = False
     lvl_won = False
+    paused = False
+
+    screen.fill(dark_grey)
+    button("NEW GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
+           light_grey, light_blue, play_game)
+    button("SCORES", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 25, 150, 50,
+           light_grey, light_blue, show_highest_scores)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 85, 150,
+           50, light_grey, light_orange, quit_game)
 
 
 def play_game():
@@ -235,11 +240,17 @@ def play_game():
 
 
 def pause():
-    screen.fill((255, 255, 255))
-    button("CONTINUE", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-           (0, 255, 0), (0, 0, 255), resume)
-    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-           50, (255, 0, 0), (0, 0, 255), quit_game)
+    s = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))  # the size of your rect
+    s.set_alpha(5)  # alpha level
+    s.fill(light_grey)  # this fills the entire surface
+    screen.blit(s, (0, 0))  # (0,0) are the top-left coordinates
+
+    button("CONTINUE", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
+           light_grey, light_blue, resume)
+    button("MAIN MENU", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 25, 150, 50,
+           light_grey, light_blue, display_main_menu)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 85, 150,
+           50, light_grey, light_orange, quit_game)
 
 
 def show_highest_scores():
@@ -247,27 +258,33 @@ def show_highest_scores():
 
 
 def display_game_lost_menu():
-    screen.fill((0, 0, 0))
-    button("YOU LOST!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-           (0, 0, 255), (0, 0, 255))
-    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-           50, (255, 0, 0), (0, 0, 255), quit_game)
+    screen.fill(dark_grey)
+    button("YOU LOST!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
+           light_grey, light_grey)
+    button("MAIN MENU", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 25, 150, 50,
+           light_grey, light_blue, display_main_menu)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 85, 150,
+           50, light_grey, light_orange, quit_game)
 
 
 def display_game_won_menu():
-    screen.fill((0, 0, 0))
-    button("YOU WON!!!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-           (0, 0, 255), (0, 0, 255))
-    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-           50, (255, 0, 0), (0, 0, 255), quit_game)
+    screen.fill(dark_grey)
+    button("YOU WON!!!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
+           light_grey, light_grey)
+    button("MAIN MENU", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 25, 150, 50,
+           light_grey, light_blue, display_main_menu)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 85, 150,
+           50, light_grey, light_orange, quit_game)
 
 
 def display_lvl_won_menu():
-    screen.fill((0, 0, 0))
-    button("NEXT LEVEL", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-           (0, 255, 0), (0, 0, 255), next_level)
-    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-           50, (255, 0, 0), (0, 0, 255), quit_game)
+    screen.fill(dark_grey)
+    button("NEXT LEVEL", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
+           light_grey, light_blue, next_level)
+    button("MAIN MENU", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 25, 150, 50,
+           light_grey, light_blue, display_main_menu)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 85, 150,
+           50, light_grey, light_orange, quit_game)
 
 
 while running:
@@ -305,19 +322,19 @@ while running:
     elif lvl_won:
         display_lvl_won_menu()
     else:
-        screen.fill((0, 0, 0))
+        screen.fill(dark_grey)
 
         for brick in bricks:
             screen.blit(brick.surf, brick.rect)
         screen.blit(player.surf, player.rect)
         screen.blit(ball.surf, ball.rect)
 
-        screen.blit(font.render('HEALTH:', False, (255, 255, 255)), (20, 10))
+        screen.blit(font.render('HEALTH:', False, light_orange), (20, 10))
         for n, health_icon in enumerate(health):
             if n < HEALTH_LVL:
                 screen.blit(health_icon.surf, health_icon.rect)
-        screen.blit(font.render('LEVEL: ' + str(LVL), False, (255, 255, 255)), (150, 10))
-        screen.blit(font.render('BALL SPEED: ' + str(ball_speed), False, (255, 255, 255)),
+        screen.blit(font.render('LEVEL: ' + str(LVL), False, light_orange), (150, 10))
+        screen.blit(font.render('BALL SPEED: ' + str(ball_speed), False, light_orange),
                     (230, 10))
 
         detect_brick_collision()
