@@ -1,7 +1,6 @@
 import random
 import pygame
-from pygame.locals import KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT, K_p, \
-    MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION
+from pygame.locals import KEYDOWN, K_ESCAPE, K_LEFT, K_RIGHT, QUIT, K_p, MOUSEBUTTONDOWN
 from enum import Enum
 from game_settings import *
 
@@ -180,6 +179,7 @@ def quit_game():
 pygame.mixer.music.load("sounds/intro.ogg")
 pygame.mixer.music.set_volume(0.2)
 pygame.mixer.music.play(-1)
+
 
 def detect_collision():
     global ball, player, ball_x, ball_y
