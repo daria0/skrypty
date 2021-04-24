@@ -302,7 +302,6 @@ def save_game_score():
         all_scores = best_scores.copy()
         all_scores.append(game_score)
         best_scores = sorted(all_scores, reverse=True)[0:5]
-        print(best_scores)
 
 
 def display_game_lost_menu():
