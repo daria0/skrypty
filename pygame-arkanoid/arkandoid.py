@@ -1,6 +1,7 @@
 import random
 import pygame
-from pygame.locals import KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT, K_p
+from pygame.locals import KEYDOWN, K_ESCAPE, K_UP, K_DOWN, K_LEFT, K_RIGHT, QUIT, K_p, \
+    MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION
 from enum import Enum
 from game_settings import *
 
@@ -20,6 +21,10 @@ class BallDirections(Enum):
 
 ball_x = BallDirections.x_LEFT
 ball_y = BallDirections.y_UP
+
+game_score = 0
+best_scores = [0, 0, 0, 0, 0]
+click = False
 
 
 class Player(pygame.sprite.Sprite):
@@ -138,7 +143,6 @@ def generate_level():
             for i in range(len(brick_pattern)) if brick_pattern[i] == 1]
         for brick in brick_locations:
             bricks.add(brick)
-
     ball_speed += 0.5 * lvl
 
 
@@ -149,11 +153,12 @@ def text_objects(font, text, color, text_center):
 
 def button(text, pos_x, pos_y, width, height, color, hover_color, action=None,
            text_color=black):
+    global click
     mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
     if pos_x + width > mouse[0] > pos_x and pos_y + height > mouse[1] > pos_y:
         pygame.draw.rect(screen, hover_color, (pos_x, pos_y, width, height))
-        if click[0] == 1 and action is not None:
+        if click and action is not None:
+            click = False
             action()
     else:
         pygame.draw.rect(screen, color, (pos_x, pos_y, width, height))
@@ -182,11 +187,12 @@ def detect_collision():
 
 
 def detect_brick_collision():
-    global ball_x, ball_y
+    global ball_x, ball_y, game_score
 
     if pygame.sprite.spritecollideany(ball, bricks):
         brick_to_delete = pygame.sprite.spritecollideany(ball, bricks)
         brick_to_delete.kill()
+        game_score += POINTS_PER_BRICK
 
         if ball_y == BallDirections.y_UP:
             if ball.y == (brick.y + 20 - ball_speed):
@@ -216,28 +222,30 @@ def next_level():
 
 
 def reset_game():
-    global display_menu, game_lost, game_won, lvl_won, paused
-    global health_lvl, lvl, ball_speed
+    global display_menu, game_lost, game_won, lvl_won, paused, score_menu
+    global health_lvl, lvl, ball_speed, game_score
 
     display_menu = True
     game_lost = False
     game_won = False
     lvl_won = False
     paused = False
+    score_menu = False
     health_lvl = HEALTH_LVL
     lvl = LVL
     ball_speed = BALL_SPEED
-
-
+    game_score = 0
 
 
 def display_main_menu():
+    if paused or lvl_won:
+        save_game_score()
     reset_game()
     screen.fill(dark_grey)
     button("NEW GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
            light_grey, light_blue, play_game)
     button("SCORES", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 25, 150, 50,
-           light_grey, light_blue, show_highest_scores)
+           light_grey, light_blue, display_highest_scores_menu)
     button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 + 85, 150,
            50, light_grey, light_orange, quit_game)
 
@@ -249,10 +257,10 @@ def play_game():
 
 
 def pause():
-    s = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))  # the size of your rect
-    s.set_alpha(5)  # alpha level
-    s.fill(light_grey)  # this fills the entire surface
-    screen.blit(s, (0, 0))  # (0,0) are the top-left coordinates
+    s = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+    s.set_alpha(5)
+    s.fill(light_grey)
+    screen.blit(s, (0, 0))
 
     button("CONTINUE", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
            light_grey, light_blue, resume)
@@ -262,8 +270,39 @@ def pause():
            50, light_grey, light_orange, quit_game)
 
 
-def show_highest_scores():
-    pass
+def back_to_main_menu():
+    global display_menu, score_menu
+    display_menu = True
+    score_menu = False
+
+
+def display_highest_scores_menu():
+    global display_menu, score_menu
+    display_menu = False
+    score_menu = True
+
+    screen.fill(dark_grey)
+    button("HIGHEST SCORES:", SCREEN_WIDTH / 2 - 75, 10, 150, 50,
+           light_blue, light_blue)
+    button("MAIN MENU", SCREEN_WIDTH / 2 - 160, SCREEN_HEIGHT - 100, 150, 50,
+           light_grey, light_blue, back_to_main_menu)
+    button("QUIT GAME", SCREEN_WIDTH / 2 + 10, SCREEN_HEIGHT - 100, 150,
+           50, light_grey, light_orange, quit_game)
+
+    for n, score in enumerate(best_scores):
+        screen.blit(font.render(str(n) + ": " + str(score), False, light_orange),
+                    (SCREEN_WIDTH / 2 - 10, 100 + 20 * n))
+
+
+def save_game_score():
+    global best_scores, game_score
+    if len(bricks) == 0 and health_lvl == HEALTH_LVL:
+        game_score += 500  # bonus
+    if game_score not in best_scores:
+        all_scores = best_scores.copy()
+        all_scores.append(game_score)
+        best_scores = sorted(all_scores, reverse=True)[0:5]
+        print(best_scores)
 
 
 def display_game_lost_menu():
@@ -303,12 +342,11 @@ while running:
         if health_lvl <= 0:
             game_lost = True
 
-        if len(bricks) == 0 and health_lvl > 0:
+        if len(bricks) == 0 and health_lvl > 0 and game_score > 0:
             if lvl >= MAX_LVL:
                 game_won = True
             else:
                 lvl_won = True
-                print("lvl won")
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -316,17 +354,23 @@ while running:
         elif event.type == KEYDOWN:
             if event.key in (K_ESCAPE, K_p):
                 paused = not paused
+        elif event.type == MOUSEBUTTONDOWN:
+            click = True
 
     pressed_keys = pygame.key.get_pressed()
     player.update(pressed_keys)
 
     if display_menu:
         display_main_menu()
+    elif score_menu:
+        display_highest_scores_menu()
     elif paused:
         pause()
     elif game_lost:
+        save_game_score()
         display_game_lost_menu()
     elif game_won:
+        save_game_score()
         display_game_won_menu()
     elif lvl_won:
         display_lvl_won_menu()
@@ -345,6 +389,7 @@ while running:
         screen.blit(font.render('LEVEL: ' + str(lvl), False, light_orange), (150, 10))
         screen.blit(font.render('BALL SPEED: ' + str(ball_speed), False, light_orange),
                     (230, 10))
+        screen.blit(font.render('SCORE: ' + str(game_score), False, white), (360, 10))
 
         detect_brick_collision()
         ball.update()
@@ -352,5 +397,4 @@ while running:
 
     clock.tick(60)
     pygame.display.flip()
-    # pygame.display.update()
 pygame.quit()

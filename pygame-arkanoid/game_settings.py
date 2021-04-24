@@ -13,6 +13,7 @@ LVL = 0
 HEALTH_LVL = 3
 
 BALL_SPEED = 1.5
+POINTS_PER_BRICK = 10
 
 # GAME VARIABLES
 
@@ -28,6 +29,7 @@ game_lost = False
 game_won = False
 lvl_won = False
 display_menu = True
+score_menu = False
 
 # COLORS
 
