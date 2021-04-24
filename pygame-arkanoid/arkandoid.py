@@ -69,7 +69,7 @@ class Ball(pygame.sprite.Sprite):
         self.y = y
 
     def update(self):
-        global ball, ball_x, ball_y, HEALTH_LVL
+        global ball, ball_x, ball_y, health_lvl
 
         if ball_x == BallDirections.x_LEFT:
             ball.x -= ball_speed
@@ -80,7 +80,7 @@ class Ball(pygame.sprite.Sprite):
             ball.y += ball_speed
             if ball.y >= SCREEN_HEIGHT - BALL_R:
                 ball_y = BallDirections.y_UP
-                HEALTH_LVL -= 1
+                health_lvl -= 1
 
         if ball_y == BallDirections.y_UP:
             ball.y -= ball_speed
@@ -112,7 +112,7 @@ pygame.display.set_caption("Arkanoid d_siemieniuk")
 player = Player(305, 450)
 ball = Ball(315, 440)
 
-health_icons = [Health(100 + 10 * i, 15) for i in range(HEALTH_LVL)]
+health_icons = [Health(100 + 10 * i, 15) for i in range(health_lvl)]
 health = pygame.sprite.Group()
 for health_icon in health_icons:
     health.add(health_icon)
@@ -121,7 +121,7 @@ bricks = pygame.sprite.Group()
 
 
 def generate_level():
-    global bricks, GAME_LVL, ball_speed, player, ball
+    global bricks, lvl, ball_speed, player, ball
 
     player = Player(305, 450)
     ball = Ball(315, 440)
@@ -139,7 +139,7 @@ def generate_level():
         for brick in brick_locations:
             bricks.add(brick)
 
-    ball_speed += 0.5 * GAME_LVL
+    ball_speed += 0.5 * lvl
 
 
 def text_objects(font, text, color, text_center):
@@ -207,23 +207,32 @@ def detect_brick_collision():
 
 
 def next_level():
-    global lvl_won, LVL
+    global lvl_won, lvl
     lvl_won = False
-    LVL += 1
+    lvl += 1
     generate_level()
-    print("LEVEL: ", LVL)
+    print("LEVEL: ", lvl)
     print("ball speed: ", ball_speed)
 
 
-def display_main_menu():
-    global game_lost, game_won, lvl_won, paused, display_menu
+def reset_game():
+    global display_menu, game_lost, game_won, lvl_won, paused
+    global health_lvl, lvl, ball_speed
 
     display_menu = True
     game_lost = False
     game_won = False
     lvl_won = False
     paused = False
+    health_lvl = HEALTH_LVL
+    lvl = LVL
+    ball_speed = BALL_SPEED
 
+
+
+
+def display_main_menu():
+    reset_game()
     screen.fill(dark_grey)
     button("NEW GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 3 - 35, 150, 50,
            light_grey, light_blue, play_game)
@@ -291,11 +300,11 @@ while running:
 
     if not display_menu:
 
-        if HEALTH_LVL <= 0:
+        if health_lvl <= 0:
             game_lost = True
 
-        if len(bricks) == 0 and HEALTH_LVL > 0:
-            if LVL >= MAX_LVL:
+        if len(bricks) == 0 and health_lvl > 0:
+            if lvl >= MAX_LVL:
                 game_won = True
             else:
                 lvl_won = True
@@ -331,9 +340,9 @@ while running:
 
         screen.blit(font.render('HEALTH:', False, light_orange), (20, 10))
         for n, health_icon in enumerate(health):
-            if n < HEALTH_LVL:
+            if n < health_lvl:
                 screen.blit(health_icon.surf, health_icon.rect)
-        screen.blit(font.render('LEVEL: ' + str(LVL), False, light_orange), (150, 10))
+        screen.blit(font.render('LEVEL: ' + str(lvl), False, light_orange), (150, 10))
         screen.blit(font.render('BALL SPEED: ' + str(ball_speed), False, light_orange),
                     (230, 10))
 

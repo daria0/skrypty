@@ -1,3 +1,5 @@
+# CONSTANTS
+
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 GAME_BORDER = 40
@@ -9,9 +11,14 @@ BALL_R = 5
 MAX_LVL = 5
 LVL = 0
 HEALTH_LVL = 3
-GAME_LVL = 1
 
-ball_speed = 1.5
+BALL_SPEED = 1.5
+
+# GAME VARIABLES
+
+lvl = LVL
+health_lvl = HEALTH_LVL
+ball_speed = BALL_SPEED
 
 # FLAGS
 
