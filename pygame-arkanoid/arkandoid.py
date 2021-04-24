@@ -37,10 +37,11 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect(center=(x, y))
 
     def update(self, pressed_keys):
-        if pressed_keys[K_LEFT]:
-            self.rect.move_ip(-3, 0)
-        if pressed_keys[K_RIGHT]:
-            self.rect.move_ip(3, 0)
+        if not paused:
+            if pressed_keys[K_LEFT]:
+                self.rect.move_ip(-3, 0)
+            if pressed_keys[K_RIGHT]:
+                self.rect.move_ip(3, 0)
 
         if self.rect.left < 0:
             self.rect.left = 0
