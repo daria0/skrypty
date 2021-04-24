@@ -214,18 +214,75 @@ def next_level():
     print("ball speed: ", ball_speed)
 
 
-next_level()
+def display_main_menu():
+    global game_lost, game_won, lvl_won
+
+    screen.fill((0, 0, 0))
+    button("NEW GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
+           (0, 255, 0), (0, 0, 255), play_game)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
+           50, (255, 0, 0), (0, 0, 255), quit_game)
+
+    game_lost = False
+    game_won = False
+    lvl_won = False
+
+
+def play_game():
+    global display_menu
+    display_menu = False
+    next_level()
+
+
+def pause():
+    screen.fill((255, 255, 255))
+    button("CONTINUE", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
+           (0, 255, 0), (0, 0, 255), resume)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
+           50, (255, 0, 0), (0, 0, 255), quit_game)
+
+
+def show_highest_scores():
+    pass
+
+
+def display_game_lost_menu():
+    screen.fill((0, 0, 0))
+    button("YOU LOST!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
+           (0, 0, 255), (0, 0, 255))
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
+           50, (255, 0, 0), (0, 0, 255), quit_game)
+
+
+def display_game_won_menu():
+    screen.fill((0, 0, 0))
+    button("YOU WON!!!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
+           (0, 0, 255), (0, 0, 255))
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
+           50, (255, 0, 0), (0, 0, 255), quit_game)
+
+
+def display_lvl_won_menu():
+    screen.fill((0, 0, 0))
+    button("NEXT LEVEL", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
+           (0, 255, 0), (0, 0, 255), next_level)
+    button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
+           50, (255, 0, 0), (0, 0, 255), quit_game)
+
 
 while running:
 
-    if HEALTH_LVL <= 0:
-        game_lost = True
+    if not display_menu:
 
-    if len(bricks) == 0 and HEALTH_LVL > 0:
-        if LVL >= MAX_LVL:
-            game_won = True
-        else:
-            lvl_won = True
+        if HEALTH_LVL <= 0:
+            game_lost = True
+
+        if len(bricks) == 0 and HEALTH_LVL > 0:
+            if LVL >= MAX_LVL:
+                game_won = True
+            else:
+                lvl_won = True
+                print("lvl won")
 
     for event in pygame.event.get():
         if event.type == QUIT:
@@ -237,30 +294,16 @@ while running:
     pressed_keys = pygame.key.get_pressed()
     player.update(pressed_keys)
 
-    if paused:
-        screen.fill((255, 255, 255))
-        button("CONTINUE", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-               (0, 255, 0), (0, 0, 255), resume)
-        button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-               50, (255, 0, 0), (0, 0, 255), quit_game)
+    if display_menu:
+        display_main_menu()
+    elif paused:
+        pause()
     elif game_lost:
-        screen.fill((0, 0, 0))
-        button("YOU LOST!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-               (0, 0, 255), (0, 0, 255))
-        button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-               50, (255, 0, 0), (0, 0, 255), quit_game)
+        display_game_lost_menu()
     elif game_won:
-        screen.fill((0, 0, 0))
-        button("YOU WON!!!", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-               (0, 0, 255), (0, 0, 255))
-        button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-               50, (255, 0, 0), (0, 0, 255), quit_game)
+        display_game_won_menu()
     elif lvl_won:
-        screen.fill((0, 0, 0))
-        button("NEXT LEVEL", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 - 50, 150, 50,
-               (0, 255, 0), (0, 0, 255), next_level)
-        button("QUIT GAME", SCREEN_WIDTH / 2 - 75, SCREEN_HEIGHT / 2 + 10, 150,
-               50, (255, 0, 0), (0, 0, 255), quit_game)
+        display_lvl_won_menu()
     else:
         screen.fill((0, 0, 0))
 
@@ -274,7 +317,8 @@ while running:
             if n < HEALTH_LVL:
                 screen.blit(health_icon.surf, health_icon.rect)
         screen.blit(font.render('LEVEL: ' + str(LVL), False, (255, 255, 255)), (150, 10))
-        screen.blit(font.render('BALL SPEED: ' + str(ball_speed), False, (255, 255, 255)), (230, 10))
+        screen.blit(font.render('BALL SPEED: ' + str(ball_speed), False, (255, 255, 255)),
+                    (230, 10))
 
         detect_brick_collision()
         ball.update()

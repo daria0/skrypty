@@ -18,3 +18,4 @@ paused = False
 game_lost = False
 game_won = False
 lvl_won = False
+display_menu = True
