@@ -176,9 +176,9 @@ def quit_game():
     running = False
 
 
-# pygame.mixer.music.load("sounds/intro.mp3")
-# pygame.mixer.music.set_volume(0.2)
-# pygame.mixer.music.play(-1)
+pygame.mixer.music.load("sounds/intro.ogg")
+pygame.mixer.music.set_volume(0.2)
+pygame.mixer.music.play(-1)
 
 def detect_collision():
     global ball, player, ball_x, ball_y
