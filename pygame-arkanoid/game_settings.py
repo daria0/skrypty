@@ -11,7 +11,7 @@ LVL = 0
 HEALTH_LVL = 3
 GAME_LVL = 1
 
-ball_speed = 1
+ball_speed = 1.5
 
 # FLAGS
 

@@ -39,8 +39,8 @@ class Player(pygame.sprite.Sprite):
 
         if self.rect.left < 0:
             self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH - 30:
-            self.rect.right = SCREEN_WIDTH - 30
+        if self.rect.right > SCREEN_WIDTH:
+            self.rect.right = SCREEN_WIDTH
 
 
 class Brick(pygame.sprite.Sprite):
@@ -79,7 +79,6 @@ class Ball(pygame.sprite.Sprite):
         if ball_y == BallDirections.y_DOWN:
             ball.y += ball_speed
             if ball.y >= SCREEN_HEIGHT - BALL_R:
-                ball_x = BallDirections.x_LEFT
                 ball_y = BallDirections.y_UP
                 HEALTH_LVL -= 1
 
@@ -127,11 +126,12 @@ def generate_level():
     player = Player(305, 450)
     ball = Ball(315, 440)
     bricks = pygame.sprite.Group()
-    rows = 7
+    rows = 5
     max_number_of_bricks = int((SCREEN_WIDTH - BRICK_WIDTH) / BRICK_WIDTH)
 
     for row in range(rows):
-        brick_pattern = [random.randrange(2) for i in range(max_number_of_bricks + 1)]
+        brick_pattern = [random.randrange(3) for i in
+                         range(max_number_of_bricks + 1)]  # 1/3 chance
         brick_locations = [
             Brick(1 / 2 * BRICK_WIDTH + i * BRICK_WIDTH,
                   GAME_BORDER + (row * BRICK_HEIGHT))
@@ -344,5 +344,4 @@ while running:
     clock.tick(60)
     pygame.display.flip()
     # pygame.display.update()
-
 pygame.quit()
