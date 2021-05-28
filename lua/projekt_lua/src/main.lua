@@ -3,3 +3,8 @@
 --- Created by daria.
 --- DateTime: 29.05.2021 00:01
 ---
+
+function love.draw()
+    love.graphics.print("Hello World!", 100, 100)
+    print(123)
+end
