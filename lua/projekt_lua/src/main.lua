@@ -21,6 +21,7 @@ ENEMY_Y = 0
 ENEMY_WIDTH = 28
 ENEMY_HEIGHT = 20
 ENEMY_SPEED = 0.2
+SPACE_BETWEEN_ENEMIES = 50
 NUMBER_OF_ENEMIES = 20
 NUMBER_OF_ROWS = 5
 NUMBER_OF_ENEMIES_IN_ONE_ROW = NUMBER_OF_ENEMIES / NUMBER_OF_ROWS
@@ -60,27 +61,26 @@ function love.load()
     end
 
     enemies_width = NUMBER_OF_ENEMIES_IN_ONE_ROW * (ENEMY_WIDTH + 50) - 50
-    for i = 0, (NUMBER_OF_ROWS - 1) do
-        for j = 0, NUMBER_OF_ENEMIES_IN_ONE_ROW - 1 do
-            enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + j * 50, i * 50)
+    for i = 1, NUMBER_OF_ROWS do
+        for j = 1, NUMBER_OF_ENEMIES_IN_ONE_ROW do
+            enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + j * SPACE_BETWEEN_ENEMIES, i * SPACE_BETWEEN_ENEMIES, (i - 1) * NUMBER_OF_ENEMIES_IN_ONE_ROW + j)
         end
     end
 
     for i, enemy in ipairs(enemies_controller.enemies) do
         if i > (NUMBER_OF_ENEMIES - NUMBER_OF_ENEMIES_IN_ONE_ROW) then
-            print(i)
-            print(NUMBER_OF_ENEMIES - NUMBER_OF_ENEMIES_IN_ONE_ROW)
             enemy.free_to_shoot = true
         end
     end
 end
 
-function enemies_controller:spawnEnemy(x, y)
+function enemies_controller:spawnEnemy(x, y, index)
     enemy = {}
     enemy.x = x
     enemy.y = y
     enemy.bullets = {}
     enemy.reload_time = 10 * RELOAD_TIME
+    enemy.index = index
     enemy.free_to_shoot = false
     enemy.fire = function(i)
         if self.enemies[i].reload_time <= 0 and self.enemies[i].free_to_shoot then
@@ -97,12 +97,50 @@ function enemies_controller:spawnEnemy(x, y)
     table.insert(self.enemies, enemy)
 end
 
+function has_value (tab, val)
+    for _, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+    return false
+end
+
+function clearToShoot(i)
+    column_counter = 0
+    indexes_to_check = {}
+    print("i to :", i)
+    for j = (i - NUMBER_OF_ENEMIES_IN_ONE_ROW), NUMBER_OF_ENEMIES, NUMBER_OF_ENEMIES_IN_ONE_ROW do
+        print("SPRAWDZENIE", j)
+        table.insert(indexes_to_check, j)
+    end
+    for _, enemy in pairs(enemies_controller.enemies) do
+        if has_value(indexes_to_check, enemy.index) then
+            column_counter = column_counter + 1
+        end
+    end
+
+    print("column counter = ", column_counter)
+    print()
+    if column_counter == 1 then
+        print("enemy clear to shoot, number:", i-NUMBER_OF_ENEMIES_IN_ONE_ROW)
+        for _, enemy in pairs(enemies_controller.enemies) do
+            if enemy.index == i-NUMBER_OF_ENEMIES_IN_ONE_ROW then
+                enemy.free_to_shoot = true
+            end
+        end
+    end
+end
+
 function detectCollisions(enemies, bullets)
     for i, enemy in ipairs(enemies) do
         for j, bullet in ipairs(bullets) do
             if bullet.y <= enemy.y + ENEMY_HEIGHT and bullet.x > enemy.x and bullet.x < enemy.x + ENEMY_WIDTH then
+                -- now enable enemy with index: enemy.i - NUMBER_OF_ENEMIES_IN_ONE_ROW
+                index = enemy.index
                 table.remove(enemies, i)
                 table.remove(player.bullets, j)
+                clearToShoot(enemy.index)
                 love.audio.play(enemy_killed_sound)
             end
         end
@@ -133,7 +171,7 @@ function love.update()
             enemy.fire(i)
         end
 
-        for i, enemy in ipairs(enemies_controller.enemies) do
+        for _, enemy in pairs(enemies_controller.enemies) do
             for j, bullet in ipairs(enemy.bullets) do
                 if bullet.y < -10 then
                     table.remove(enemy.bullets, j)
