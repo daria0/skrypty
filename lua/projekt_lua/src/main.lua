@@ -10,27 +10,33 @@ RELOAD_TIME = 20
 --- PLAYER
 PLAYER_X = 0
 PLAYER_Y = 570
-PLAYER_WIDTH = 80
-PLAYER_HEIGHT = 20
+PLAYER_WIDTH = 22
+PLAYER_HEIGHT = 22
 PLAYER_SPEED = 5
 --- BULLET
-BULLET_WIDTH = 10
-BULLET_HEIGHT = 10
+BULLET_WIDTH = 4
+BULLET_HEIGHT = 8
 --- ENEMY
 ENEMY_X = 0
 ENEMY_Y = 0
-ENEMY_WIDTH = 80
+ENEMY_WIDTH = 28
 ENEMY_HEIGHT = 20
-ENEMY_SPEED = 5
+ENEMY_SPEED = 1
+
+--in case of changing scale of the images:
+love.graphics.setDefaultFilter("nearest", "nearest")
 
 enemy = {}
 enemies_controller = {}
 enemies_controller.enemies = {}
+enemies_controller.image = love.graphics.newImage("enemy.png")
+bullet_image = love.graphics.newImage("bullet.png")
 
 function love.load()
     player = {}
     player.x = PLAYER_X
     player.y = PLAYER_Y
+    player.image = love.graphics.newImage("player.png")
     player.bullets = {}
     player.reload_time = RELOAD_TIME
     player.fire = function()
@@ -42,13 +48,14 @@ function love.load()
             table.insert(player.bullets, bullet)
         end
     end
-    enemies_controller:spawnEnemy()
+    enemies_controller:spawnEnemy(0, 0)
+    enemies_controller:spawnEnemy(100, 0)
 end
 
-function enemies_controller:spawnEnemy()
+function enemies_controller:spawnEnemy(x, y)
     enemy = {}
-    enemy.x = ENEMY_X
-    enemy.y = ENEMY_Y
+    enemy.x = x
+    enemy.y = y
     enemy.bullets = {}
     enemy.reload_time = RELOAD_TIME
     table.insert(self.enemies, enemy)
@@ -82,17 +89,23 @@ function love.update(dt)
         end
         bullet.y = bullet.y - 10
     end
+
+    for _, enemy in pairs(enemies_controller.enemies) do
+        enemy.y = enemy.y + ENEMY_SPEED
+    end
 end
 
 function love.draw()
-    love.graphics.print("Hello World!", 100, 100)
-    love.graphics.rectangle("fill", player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT)
+    --love.graphics.print("Hello World!", 100, 100)
+
+    love.graphics.draw(player.image, player.x, player.y)
 
     for _, enemy in pairs(enemies_controller.enemies) do
-        love.graphics.rectangle("fill", enemy.x, enemy.y, ENEMY_WIDTH, ENEMY_HEIGHT)
+        love.graphics.draw(enemies_controller.image, enemy.x, enemy.y)
     end
 
     for _, bullet in pairs(player.bullets) do
-        love.graphics.rectangle("fill", bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT)
+        --love.graphics.rectangle("fill", bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT)
+        love.graphics.draw(bullet_image, bullet.x, bullet.y)
     end
 end
