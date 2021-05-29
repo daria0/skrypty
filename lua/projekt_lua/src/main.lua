@@ -51,6 +51,7 @@ function love.load()
     player.bullets = {}
     player.reload_time = RELOAD_TIME
     player.fire_sound = love.audio.newSource("shoot.wav", "static")
+    player.explosion_sound = love.audio.newSource("explosion.wav", "static")
     player.fire = function()
         if player.reload_time <= 0 then
             love.audio.play(player.fire_sound)
@@ -81,19 +82,19 @@ function enemies_controller:spawnEnemy(x, y, index)
     enemy.x = x
     enemy.y = y
     enemy.bullets = {}
-    enemy.reload_time = 10 * RELOAD_TIME
+    enemy.reload_time = 5 * RELOAD_TIME
     enemy.index = index
     enemy.free_to_shoot = false
     enemy.fire = function(i)
         if self.enemies[i].reload_time <= 0 and self.enemies[i].free_to_shoot then
-            self.enemies[i].reload_time = 10 * RELOAD_TIME
-            --if math.random(0, 5) == 1 then
-            --shooting probability = 1/6
-            bullet = {}
-            bullet.x = self.enemies[i].x + ENEMY_WIDTH / 2 - BULLET_WIDTH / 2
-            bullet.y = self.enemies[i].y
-            table.insert(self.enemies[i].bullets, bullet)
-            --end
+            self.enemies[i].reload_time = 5 * RELOAD_TIME
+            if math.random(0, 1) == 1 then
+                --shooting probability = 1/2
+                bullet = {}
+                bullet.x = self.enemies[i].x + ENEMY_WIDTH / 2 - BULLET_WIDTH / 2
+                bullet.y = self.enemies[i].y
+                table.insert(self.enemies[i].bullets, bullet)
+            end
         end
     end
     table.insert(self.enemies, enemy)
@@ -133,13 +134,24 @@ function detectCollisions(enemies, bullets)
     for i, enemy in ipairs(enemies) do
         for j, bullet in ipairs(bullets) do
             if bullet.y <= enemy.y + ENEMY_HEIGHT and bullet.x > enemy.x and bullet.x < enemy.x + ENEMY_WIDTH then
-                -- now enable enemy with index: enemy.i - NUMBER_OF_ENEMIES_IN_ONE_ROW
                 index = enemy.index
                 table.remove(enemies, i)
                 table.remove(player.bullets, j)
+                -- now enable enemy with index: enemy.i - NUMBER_OF_ENEMIES_IN_ONE_ROW to shoot
                 clearToShoot(enemy.index)
                 player.score = player.score + POINTS_FOR_KILLING
                 love.audio.play(enemy_killed_sound)
+            end
+        end
+    end
+end
+
+function detectPlayerKilled(enemies)
+    for _, enemy in pairs(enemies) do
+        for _, bullet in pairs(enemy.bullets) do
+            if bullet.y >= player.y and bullet.x > player.x and bullet.x < player.x + PLAYER_WIDTH then
+                love.audio.play(player.explosion_sound)
+                game_over = true
             end
         end
     end
@@ -171,7 +183,7 @@ function love.update()
 
         for _, enemy in pairs(enemies_controller.enemies) do
             for j, bullet in ipairs(enemy.bullets) do
-                if bullet.y < -10 then
+                if bullet.y > love.graphics.getHeight() then
                     table.remove(enemy.bullets, j)
                 end
                 bullet.y = bullet.y + 1
@@ -194,6 +206,7 @@ function love.update()
         end
 
         detectCollisions(enemies_controller.enemies, player.bullets)
+        detectPlayerKilled(enemies_controller.enemies)
     end
 end
 
