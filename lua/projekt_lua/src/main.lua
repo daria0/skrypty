@@ -5,7 +5,7 @@
 
 
 --- CONFIG:
-RELOAD_TIME = 20
+RELOAD_TIME = 15
 --- PLAYER
 PLAYER_X = 0
 PLAYER_Y = 570
@@ -20,7 +20,7 @@ ENEMY_X = 0
 ENEMY_Y = 0
 ENEMY_WIDTH = 28
 ENEMY_HEIGHT = 20
-ENEMY_SPEED = 1
+ENEMY_SPEED = 0.2
 NUMBER_OF_ENEMIES = 20
 NUMBER_OF_ROWS = 5
 
@@ -32,9 +32,14 @@ enemies_controller = {}
 enemies_controller.enemies = {}
 enemies_controller.image = love.graphics.newImage("enemy.png")
 bullet_image = love.graphics.newImage("bullet.png")
+background_image = love.graphics.newImage("background.png")
 enemy_killed_sound = love.audio.newSource("invaderkilled.wav", "static")
 
 function love.load()
+
+    game_over = false
+    game_won = false
+
     player = {}
     player.x = PLAYER_X
     player.y = PLAYER_Y
@@ -91,35 +96,53 @@ function detectCollisions(enemies, bullets)
     end
 end
 
-function love.update(dt)
-    player.reload_time = player.reload_time - 1
-    if love.keyboard.isDown("left") then
-        player.x = player.x - PLAYER_SPEED
-    elseif love.keyboard.isDown("right") then
-        player.x = player.x + PLAYER_SPEED
-    end
-
-    if love.keyboard.isDown("space") then
-        player.fire()
-    end
-
-    for i, bullet in pairs(player.bullets) do
-        if bullet.y < -10 then
-            table.remove(player.bullets, i)
+function love.update()
+    if not game_won and not game_over then
+        player.reload_time = player.reload_time - 1
+        if love.keyboard.isDown("left") then
+            player.x = player.x - PLAYER_SPEED
+        elseif love.keyboard.isDown("right") then
+            player.x = player.x + PLAYER_SPEED
         end
-        bullet.y = bullet.y - 10
-    end
 
-    for _, enemy in pairs(enemies_controller.enemies) do
-        enemy.y = enemy.y + ENEMY_SPEED
-    end
+        if love.keyboard.isDown("space") then
+            player.fire()
+        end
 
-    detectCollisions(enemies_controller.enemies, player.bullets)
+        if #enemies_controller.enemies == 0 then
+            game_won = true
+        end
+
+        for i, bullet in pairs(player.bullets) do
+            if bullet.y < -10 then
+                table.remove(player.bullets, i)
+            end
+            bullet.y = bullet.y - 10
+        end
+
+        for _, enemy in pairs(enemies_controller.enemies) do
+            if enemy.y >= love.graphics.getHeight() then
+                game_over = true
+            end
+            enemy.y = enemy.y + ENEMY_SPEED
+        end
+
+        detectCollisions(enemies_controller.enemies, player.bullets)
+    end
 end
 
 function love.draw()
     --love.graphics.print("Hello World!", 100, 100)
 
+    if game_over then
+        love.graphics.print("GAME OVER!!!", love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 10)
+        return
+    elseif game_won then
+        love.graphics.print("YOU WON!!!", love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 10)
+        return
+    end
+
+    love.graphics.draw(background_image)
     love.graphics.draw(player.image, player.x, player.y)
 
     for _, enemy in pairs(enemies_controller.enemies) do
