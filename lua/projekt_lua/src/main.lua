@@ -30,6 +30,7 @@ enemies_controller = {}
 enemies_controller.enemies = {}
 enemies_controller.image = love.graphics.newImage("enemy.png")
 bullet_image = love.graphics.newImage("bullet.png")
+enemy_killed_sound = love.audio.newSource("invaderkilled.wav", "static")
 
 function love.load()
     player = {}
@@ -38,8 +39,10 @@ function love.load()
     player.image = love.graphics.newImage("player.png")
     player.bullets = {}
     player.reload_time = RELOAD_TIME
+    player.fire_sound = love.audio.newSource("shoot.wav", "static")
     player.fire = function()
         if player.reload_time <= 0 then
+            love.audio.play(player.fire_sound)
             player.reload_time = RELOAD_TIME
             bullet = {}
             bullet.x = player.x + PLAYER_WIDTH / 2 - BULLET_WIDTH / 2
@@ -70,6 +73,18 @@ function enemy:fire()
     end
 end
 
+function detectCollisions(enemies, bullets)
+    for i, enemy in pairs(enemies) do
+        for _, bullet in pairs(bullets) do
+            if bullet.y <= enemy.y + ENEMY_HEIGHT and bullet.x > enemy.x and bullet.x < enemy.x + ENEMY_WIDTH then
+                print("COLLISION!")
+                table.remove(enemies, i)
+                love.audio.play(enemy_killed_sound)
+            end
+        end
+    end
+end
+
 function love.update(dt)
     player.reload_time = player.reload_time - 1
     if love.keyboard.isDown("left") then
@@ -92,6 +107,8 @@ function love.update(dt)
     for _, enemy in pairs(enemies_controller.enemies) do
         enemy.y = enemy.y + ENEMY_SPEED
     end
+
+    detectCollisions(enemies_controller.enemies, player.bullets)
 end
 
 function love.draw()
