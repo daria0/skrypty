@@ -71,25 +71,23 @@ function enemies_controller:spawnEnemy(x, y)
     enemy.x = x
     enemy.y = y
     enemy.bullets = {}
-    enemy.reload_time = RELOAD_TIME
+    enemy.reload_time = 10*RELOAD_TIME
+    enemy.fire = function(i)
+        if self.enemies[i].reload_time <= 0 then
+            self.enemies[i].reload_time = 10*RELOAD_TIME
+            bullet = {}
+            bullet.x = self.enemies[i].x + ENEMY_WIDTH / 2 - BULLET_WIDTH / 2
+            bullet.y = self.enemies[i].y
+            table.insert(self.enemies[i].bullets, bullet)
+        end
+    end
     table.insert(self.enemies, enemy)
 end
 
-function enemy:fire()
-    if self.reload_time <= 0 then
-        self.reload_time = RELOAD_TIME
-        bullet = {}
-        bullet.x = self.x + ENEMY_WIDTH / 2 - BULLET_WIDTH / 2
-        bullet.y = self.y
-        table.insert(self.bullets, bullet)
-    end
-end
-
 function detectCollisions(enemies, bullets)
-    for i, enemy in pairs(enemies) do
-        for j, bullet in pairs(bullets) do
+    for i, enemy in ipairs(enemies) do
+        for j, bullet in ipairs(bullets) do
             if bullet.y <= enemy.y + ENEMY_HEIGHT and bullet.x > enemy.x and bullet.x < enemy.x + ENEMY_WIDTH then
-                print("INVADER KILLED!")
                 table.remove(enemies, i)
                 table.remove(player.bullets, j)
                 love.audio.play(enemy_killed_sound)
@@ -100,7 +98,9 @@ end
 
 function love.update()
     if not game_won and not game_over then
+
         player.reload_time = player.reload_time - 1
+
         if love.keyboard.isDown("left") then
             player.x = player.x - PLAYER_SPEED
         elseif love.keyboard.isDown("right") then
@@ -115,7 +115,21 @@ function love.update()
             game_won = true
         end
 
-        for i, bullet in pairs(player.bullets) do
+        for i, enemy in ipairs(enemies_controller.enemies) do
+            enemy.reload_time = enemies_controller.enemies[i].reload_time -1
+            enemy.fire(i)
+        end
+
+        for i, enemy in ipairs(enemies_controller.enemies) do
+            for j, bullet in ipairs(enemy.bullets) do
+                if bullet.y < -10 then
+                    table.remove(enemy.bullets, j)
+                end
+                bullet.y = bullet.y + 1
+            end
+        end
+
+        for i, bullet in ipairs(player.bullets) do
             if bullet.y < -10 then
                 table.remove(player.bullets, i)
             end
@@ -155,5 +169,11 @@ function love.draw()
     for _, bullet in pairs(player.bullets) do
         --love.graphics.rectangle("fill", bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT)
         love.graphics.draw(bullet_image, bullet.x, bullet.y)
+    end
+
+    for _, enemy in pairs(enemies_controller.enemies) do
+        for _, bullet in pairs(enemy.bullets) do
+            love.graphics.draw(bullet_image, bullet.x, bullet.y)
+        end
     end
 end
