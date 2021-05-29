@@ -4,6 +4,60 @@
 --- DateTime: 29.05.2021 00:01
 ---
 
+
+--- CONFIG:
+--- PLAYER
+PLAYER_X = 0
+PLAYER_Y = 400
+PLAYER_WIDTH = 80
+PLAYER_HEIGHT = 20
+RELOAD_TIME = 20
+--- BULLET
+BULLET_WIDTH = 10
+BULLET_HEIGHT = 10
+
+function love.load()
+    player = {}
+    player.x = PLAYER_X
+    player.y = PLAYER_Y
+    player.bullets = {}
+    player.reload_time = RELOAD_TIME
+    player.fire = function()
+        if player.reload_time <= 0 then
+            player.reload_time = RELOAD_TIME
+            bullet = {}
+            bullet.x = player.x + PLAYER_WIDTH/2 - BULLET_WIDTH/2
+            bullet.y = player.y
+            table.insert(player.bullets, bullet)
+        end
+    end
+end
+
+function love.update(dt)
+    player.reload_time = player.reload_time - 1
+    if love.keyboard.isDown("left") then
+        player.x = player.x - 1
+    elseif love.keyboard.isDown("right") then
+        player.x = player.x + 1
+    end
+
+    if love.keyboard.isDown("space") then
+        player.fire()
+    end
+
+    for i,bullet in pairs(player.bullets) do
+        if bullet.y < -10 then
+            table.remove(player.bullets, i)
+        end
+        bullet.y = bullet.y - 10
+    end
+end
+
 function love.draw()
     love.graphics.print("Hello World!", 100, 100)
+    love.graphics.rectangle("fill", player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT)
+
+    for _,bullet in pairs(player.bullets) do
+        love.graphics.rectangle("fill", bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT)
+    end
 end
