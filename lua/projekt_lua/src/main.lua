@@ -23,6 +23,7 @@ ENEMY_HEIGHT = 20
 ENEMY_SPEED = 0.2
 NUMBER_OF_ENEMIES = 20
 NUMBER_OF_ROWS = 5
+NUMBER_OF_ENEMIES_IN_ONE_ROW = NUMBER_OF_ENEMIES / NUMBER_OF_ROWS
 
 --in case of changing scale of the images:
 love.graphics.setDefaultFilter("nearest", "nearest")
@@ -58,10 +59,18 @@ function love.load()
         end
     end
 
-    enemies_width = NUMBER_OF_ENEMIES/NUMBER_OF_ROWS * (ENEMY_WIDTH + 50) - 50
-    for i =0, NUMBER_OF_ROWS do
-        for j=0, NUMBER_OF_ENEMIES/NUMBER_OF_ROWS do
-            enemies_controller:spawnEnemy(love.graphics.getWidth()/2 - enemies_width/2 +  j*50, i*50)
+    enemies_width = NUMBER_OF_ENEMIES_IN_ONE_ROW * (ENEMY_WIDTH + 50) - 50
+    for i = 0, (NUMBER_OF_ROWS - 1) do
+        for j = 0, NUMBER_OF_ENEMIES_IN_ONE_ROW - 1 do
+            enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + j * 50, i * 50)
+        end
+    end
+
+    for i, enemy in ipairs(enemies_controller.enemies) do
+        if i > (NUMBER_OF_ENEMIES - NUMBER_OF_ENEMIES_IN_ONE_ROW) then
+            print(i)
+            print(NUMBER_OF_ENEMIES - NUMBER_OF_ENEMIES_IN_ONE_ROW)
+            enemy.free_to_shoot = true
         end
     end
 end
@@ -71,14 +80,18 @@ function enemies_controller:spawnEnemy(x, y)
     enemy.x = x
     enemy.y = y
     enemy.bullets = {}
-    enemy.reload_time = 10*RELOAD_TIME
+    enemy.reload_time = 10 * RELOAD_TIME
+    enemy.free_to_shoot = false
     enemy.fire = function(i)
-        if self.enemies[i].reload_time <= 0 then
-            self.enemies[i].reload_time = 10*RELOAD_TIME
+        if self.enemies[i].reload_time <= 0 and self.enemies[i].free_to_shoot then
+            self.enemies[i].reload_time = 10 * RELOAD_TIME
+            --if math.random(0, 5) == 1 then
+            --shooting probability = 1/6
             bullet = {}
             bullet.x = self.enemies[i].x + ENEMY_WIDTH / 2 - BULLET_WIDTH / 2
             bullet.y = self.enemies[i].y
             table.insert(self.enemies[i].bullets, bullet)
+            --end
         end
     end
     table.insert(self.enemies, enemy)
@@ -116,7 +129,7 @@ function love.update()
         end
 
         for i, enemy in ipairs(enemies_controller.enemies) do
-            enemy.reload_time = enemies_controller.enemies[i].reload_time -1
+            enemy.reload_time = enemies_controller.enemies[i].reload_time - 1
             enemy.fire(i)
         end
 
@@ -152,10 +165,10 @@ function love.draw()
     --love.graphics.print("Hello World!", 100, 100)
 
     if game_over then
-        love.graphics.print("GAME OVER!!!", love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 10)
+        love.graphics.print("GAME OVER!!!", love.graphics.getWidth() / 2 - 40, love.graphics.getHeight() / 2 - 10)
         return
     elseif game_won then
-        love.graphics.print("YOU WON!!!", love.graphics.getWidth()/2 - 40, love.graphics.getHeight()/2 - 10)
+        love.graphics.print("YOU WON!!!", love.graphics.getWidth() / 2 - 40, love.graphics.getHeight() / 2 - 10)
         return
     end
 
