@@ -4,7 +4,8 @@
 ---
 
 
---- CONFIG:
+---
+--- CONFIG ---
 RELOAD_TIME = 15
 BASE_POINTS_FOR_KILLING = 10
 --- PLAYER
@@ -28,6 +29,8 @@ SPACE_BETWEEN_ENEMIES = 50
 NUMBER_OF_ENEMIES = 20
 NUMBER_OF_ROWS = 5
 NUMBER_OF_ENEMIES_IN_ONE_ROW = NUMBER_OF_ENEMIES / NUMBER_OF_ROWS
+--- END OF CONFIG ---
+---
 
 --in case of changing scale of the images:
 love.graphics.setDefaultFilter("nearest", "nearest")
@@ -41,15 +44,12 @@ enemies_controller.image[2] = love.graphics.newImage("enemy2.png")
 enemies_controller.image[3] = love.graphics.newImage("enemy3.png")
 enemies_controller.image[4] = love.graphics.newImage("enemy4.png")
 enemies_controller.image[5] = love.graphics.newImage("enemy5.png")
+
 bullet_image = love.graphics.newImage("bullet.png")
 background_image = love.graphics.newImage("background.png")
 enemy_killed_sound = love.audio.newSource("invaderkilled.wav", "static")
 
-function love.load()
-
-    game_over = false
-    game_won = false
-
+function newPlayer()
     player = {}
     player.x = PLAYER_X
     player.y = PLAYER_Y
@@ -69,19 +69,34 @@ function love.load()
             table.insert(player.bullets, bullet)
         end
     end
+    return player
+end
 
+function spawnEnemies()
     enemies_width = NUMBER_OF_ENEMIES_IN_ONE_ROW * (ENEMY_WIDTH + SPACE_BETWEEN_ENEMIES) - SPACE_BETWEEN_ENEMIES
     for i = 1, NUMBER_OF_ROWS do
         for j = 1, NUMBER_OF_ENEMIES_IN_ONE_ROW do
             enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + (j - 0.5) * SPACE_BETWEEN_ENEMIES, i * SPACE_BETWEEN_ENEMIES, (i - 1) * NUMBER_OF_ENEMIES_IN_ONE_ROW + j, NUMBER_OF_ROWS - i + 1)
         end
     end
+end
 
+function clearFirstEnemiesToShoot()
     for i, enemy in ipairs(enemies_controller.enemies) do
         if i > (NUMBER_OF_ENEMIES - NUMBER_OF_ENEMIES_IN_ONE_ROW) then
             enemy.free_to_shoot = true
         end
     end
+end
+
+function love.load()
+
+    game_over = false
+    game_won = false
+
+    player = newPlayer()
+    spawnEnemies()
+    clearFirstEnemiesToShoot()
 end
 
 function enemies_controller:spawnEnemy(x, y, index, level)
@@ -165,15 +180,55 @@ function detectPlayerKilled(enemies)
     end
 end
 
+function updateEnemiesPositions()
+    for _, enemy in pairs(enemies_controller.enemies) do
+        if enemy.y >= love.graphics.getHeight() then
+            game_over = true
+        end
+        enemy.y = enemy.y + ENEMY_SPEED
+        enemy.x = enemy.x + math.sin(love.timer.getTime()) / 2
+    end
+end
+
+function updatePlayerPosition()
+    if love.keyboard.isDown("left") then
+        player.x = player.x - PLAYER_SPEED
+    elseif love.keyboard.isDown("right") then
+        player.x = player.x + PLAYER_SPEED
+    end
+end
+
+function updateEnemiesBulletsPositions()
+    for _, enemy in pairs(enemies_controller.enemies) do
+        for j, bullet in ipairs(enemy.bullets) do
+            if bullet.y > love.graphics.getHeight() then
+                table.remove(enemy.bullets, j)
+            end
+            bullet.y = bullet.y + ENEMY_BULLET_SPEED
+        end
+    end
+end
+
+function updatePlayerBulletsPositions()
+    for i, bullet in ipairs(player.bullets) do
+        if bullet.y < -10 then
+            table.remove(player.bullets, i)
+        end
+        bullet.y = bullet.y - PLAYER_BULLET_SPEED
+    end
+end
+
 function love.update()
     if not game_won and not game_over then
 
         player.reload_time = player.reload_time - 1
 
-        if love.keyboard.isDown("left") then
-            player.x = player.x - PLAYER_SPEED
-        elseif love.keyboard.isDown("right") then
-            player.x = player.x + PLAYER_SPEED
+        updatePlayerPosition()
+        updateEnemiesPositions()
+
+        for i, enemy in ipairs(enemies_controller.enemies) do
+            enemy.reload_time = enemies_controller.enemies[i].reload_time - 1
+            enemy.fire(i)
         end
 
         if love.keyboard.isDown("space") then
@@ -184,34 +239,8 @@ function love.update()
             game_won = true
         end
 
-        for i, enemy in ipairs(enemies_controller.enemies) do
-            enemy.reload_time = enemies_controller.enemies[i].reload_time - 1
-            enemy.fire(i)
-        end
-
-        for _, enemy in pairs(enemies_controller.enemies) do
-            for j, bullet in ipairs(enemy.bullets) do
-                if bullet.y > love.graphics.getHeight() then
-                    table.remove(enemy.bullets, j)
-                end
-                bullet.y = bullet.y + ENEMY_BULLET_SPEED
-            end
-        end
-
-        for i, bullet in ipairs(player.bullets) do
-            if bullet.y < -10 then
-                table.remove(player.bullets, i)
-            end
-            bullet.y = bullet.y - PLAYER_BULLET_SPEED
-        end
-
-        for _, enemy in pairs(enemies_controller.enemies) do
-            if enemy.y >= love.graphics.getHeight() then
-                game_over = true
-            end
-            enemy.y = enemy.y + ENEMY_SPEED
-            enemy.x = enemy.x + math.sin(love.timer.getTime()) / 2
-        end
+        updateEnemiesBulletsPositions()
+        updatePlayerBulletsPositions()
 
         detectCollisions(enemies_controller.enemies, player.bullets)
         detectPlayerKilled(enemies_controller.enemies)
@@ -229,8 +258,10 @@ function love.draw()
     end
 
     love.graphics.draw(background_image)
+
     love.graphics.print("SCORE:", 10, 10)
     love.graphics.print(player.score, 70, 10)
+
     love.graphics.draw(player.image, player.x, player.y)
 
     for _, enemy in pairs(enemies_controller.enemies) do
@@ -238,7 +269,6 @@ function love.draw()
     end
 
     for _, bullet in pairs(player.bullets) do
-        --love.graphics.rectangle("fill", bullet.x, bullet.y, BULLET_WIDTH, BULLET_HEIGHT)
         love.graphics.draw(bullet_image, bullet.x, bullet.y)
     end
 
