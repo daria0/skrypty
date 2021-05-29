@@ -8,10 +8,11 @@
 --- CONFIG:
 --- PLAYER
 PLAYER_X = 0
-PLAYER_Y = 400
+PLAYER_Y = 570
 PLAYER_WIDTH = 80
 PLAYER_HEIGHT = 20
 RELOAD_TIME = 20
+PLAYER_SPEED = 5
 --- BULLET
 BULLET_WIDTH = 10
 BULLET_HEIGHT = 10
@@ -36,9 +37,9 @@ end
 function love.update(dt)
     player.reload_time = player.reload_time - 1
     if love.keyboard.isDown("left") then
-        player.x = player.x - 1
+        player.x = player.x - PLAYER_SPEED
     elseif love.keyboard.isDown("right") then
-        player.x = player.x + 1
+        player.x = player.x + PLAYER_SPEED
     end
 
     if love.keyboard.isDown("space") then
