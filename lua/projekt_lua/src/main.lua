@@ -6,7 +6,7 @@
 
 --- CONFIG:
 RELOAD_TIME = 15
-POINTS_FOR_KILLING = 10
+BASE_POINTS_FOR_KILLING = 10
 --- PLAYER
 PLAYER_X = 0
 PLAYER_Y = 570
@@ -33,7 +33,12 @@ love.graphics.setDefaultFilter("nearest", "nearest")
 enemy = {}
 enemies_controller = {}
 enemies_controller.enemies = {}
-enemies_controller.image = love.graphics.newImage("enemy.png")
+enemies_controller.image = {}
+enemies_controller.image[1] = love.graphics.newImage("enemy1.png")
+enemies_controller.image[2] = love.graphics.newImage("enemy2.png")
+enemies_controller.image[3] = love.graphics.newImage("enemy3.png")
+enemies_controller.image[4] = love.graphics.newImage("enemy4.png")
+enemies_controller.image[5] = love.graphics.newImage("enemy5.png")
 bullet_image = love.graphics.newImage("bullet.png")
 background_image = love.graphics.newImage("background.png")
 enemy_killed_sound = love.audio.newSource("invaderkilled.wav", "static")
@@ -66,7 +71,7 @@ function love.load()
     enemies_width = NUMBER_OF_ENEMIES_IN_ONE_ROW * (ENEMY_WIDTH + 50) - 50
     for i = 1, NUMBER_OF_ROWS do
         for j = 1, NUMBER_OF_ENEMIES_IN_ONE_ROW do
-            enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + j * SPACE_BETWEEN_ENEMIES, i * SPACE_BETWEEN_ENEMIES, (i - 1) * NUMBER_OF_ENEMIES_IN_ONE_ROW + j)
+            enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + j * SPACE_BETWEEN_ENEMIES, i * SPACE_BETWEEN_ENEMIES, (i - 1) * NUMBER_OF_ENEMIES_IN_ONE_ROW + j, NUMBER_OF_ROWS - i + 1)
         end
     end
 
@@ -77,13 +82,14 @@ function love.load()
     end
 end
 
-function enemies_controller:spawnEnemy(x, y, index)
+function enemies_controller:spawnEnemy(x, y, index, level)
     enemy = {}
     enemy.x = x
     enemy.y = y
-    enemy.bullets = {}
-    enemy.reload_time = 5 * RELOAD_TIME
     enemy.index = index
+    enemy.level = level
+    enemy.bullets = {}
+    enemy.reload_time = (6-level) * RELOAD_TIME
     enemy.free_to_shoot = false
     enemy.fire = function(i)
         if self.enemies[i].reload_time <= 0 and self.enemies[i].free_to_shoot then
@@ -139,7 +145,7 @@ function detectCollisions(enemies, bullets)
                 table.remove(player.bullets, j)
                 -- now enable enemy with index: enemy.i - NUMBER_OF_ENEMIES_IN_ONE_ROW to shoot
                 clearToShoot(enemy.index)
-                player.score = player.score + POINTS_FOR_KILLING
+                player.score = player.score + BASE_POINTS_FOR_KILLING*enemy.level
                 love.audio.play(enemy_killed_sound)
             end
         end
@@ -226,7 +232,7 @@ function love.draw()
     love.graphics.draw(player.image, player.x, player.y)
 
     for _, enemy in pairs(enemies_controller.enemies) do
-        love.graphics.draw(enemies_controller.image, enemy.x, enemy.y)
+        love.graphics.draw(enemies_controller.image[enemy.level], enemy.x, enemy.y)
     end
 
     for _, bullet in pairs(player.bullets) do
