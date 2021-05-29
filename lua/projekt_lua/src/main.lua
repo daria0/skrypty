@@ -8,14 +8,16 @@
 RELOAD_TIME = 15
 BASE_POINTS_FOR_KILLING = 10
 --- PLAYER
-PLAYER_X = 0
-PLAYER_Y = 570
 PLAYER_WIDTH = 22
 PLAYER_HEIGHT = 22
+PLAYER_X = (love.graphics.getWidth() - PLAYER_WIDTH) / 2
+PLAYER_Y = 570
 PLAYER_SPEED = 5
 --- BULLET
 BULLET_WIDTH = 4
 BULLET_HEIGHT = 8
+PLAYER_BULLET_SPEED = 8
+ENEMY_BULLET_SPEED = 2
 --- ENEMY
 ENEMY_X = 0
 ENEMY_Y = 0
@@ -68,10 +70,10 @@ function love.load()
         end
     end
 
-    enemies_width = NUMBER_OF_ENEMIES_IN_ONE_ROW * (ENEMY_WIDTH + 50) - 50
+    enemies_width = NUMBER_OF_ENEMIES_IN_ONE_ROW * (ENEMY_WIDTH + SPACE_BETWEEN_ENEMIES) - SPACE_BETWEEN_ENEMIES
     for i = 1, NUMBER_OF_ROWS do
         for j = 1, NUMBER_OF_ENEMIES_IN_ONE_ROW do
-            enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + j * SPACE_BETWEEN_ENEMIES, i * SPACE_BETWEEN_ENEMIES, (i - 1) * NUMBER_OF_ENEMIES_IN_ONE_ROW + j, NUMBER_OF_ROWS - i + 1)
+            enemies_controller:spawnEnemy(love.graphics.getWidth() / 2 - enemies_width / 2 + (j - 0.5) * SPACE_BETWEEN_ENEMIES, i * SPACE_BETWEEN_ENEMIES, (i - 1) * NUMBER_OF_ENEMIES_IN_ONE_ROW + j, NUMBER_OF_ROWS - i + 1)
         end
     end
 
@@ -89,7 +91,7 @@ function enemies_controller:spawnEnemy(x, y, index, level)
     enemy.index = index
     enemy.level = level
     enemy.bullets = {}
-    enemy.reload_time = (6-level) * RELOAD_TIME
+    enemy.reload_time = (6 - level) * RELOAD_TIME
     enemy.free_to_shoot = false
     enemy.fire = function(i)
         if self.enemies[i].reload_time <= 0 and self.enemies[i].free_to_shoot then
@@ -145,7 +147,7 @@ function detectCollisions(enemies, bullets)
                 table.remove(player.bullets, j)
                 -- now enable enemy with index: enemy.i - NUMBER_OF_ENEMIES_IN_ONE_ROW to shoot
                 clearToShoot(enemy.index)
-                player.score = player.score + BASE_POINTS_FOR_KILLING*enemy.level
+                player.score = player.score + BASE_POINTS_FOR_KILLING * enemy.level
                 love.audio.play(enemy_killed_sound)
             end
         end
@@ -192,7 +194,7 @@ function love.update()
                 if bullet.y > love.graphics.getHeight() then
                     table.remove(enemy.bullets, j)
                 end
-                bullet.y = bullet.y + 1
+                bullet.y = bullet.y + ENEMY_BULLET_SPEED
             end
         end
 
@@ -200,7 +202,7 @@ function love.update()
             if bullet.y < -10 then
                 table.remove(player.bullets, i)
             end
-            bullet.y = bullet.y - 10
+            bullet.y = bullet.y - PLAYER_BULLET_SPEED
         end
 
         for _, enemy in pairs(enemies_controller.enemies) do
