@@ -6,6 +6,7 @@
 
 --- CONFIG:
 RELOAD_TIME = 15
+POINTS_FOR_KILLING = 10
 --- PLAYER
 PLAYER_X = 0
 PLAYER_Y = 570
@@ -46,6 +47,7 @@ function love.load()
     player.x = PLAYER_X
     player.y = PLAYER_Y
     player.image = love.graphics.newImage("player.png")
+    player.score = 0
     player.bullets = {}
     player.reload_time = RELOAD_TIME
     player.fire_sound = love.audio.newSource("shoot.wav", "static")
@@ -136,6 +138,7 @@ function detectCollisions(enemies, bullets)
                 table.remove(enemies, i)
                 table.remove(player.bullets, j)
                 clearToShoot(enemy.index)
+                player.score = player.score + POINTS_FOR_KILLING
                 love.audio.play(enemy_killed_sound)
             end
         end
@@ -195,7 +198,6 @@ function love.update()
 end
 
 function love.draw()
-    --love.graphics.print("Hello World!", 100, 100)
 
     if game_over then
         love.graphics.print("GAME OVER!!!", love.graphics.getWidth() / 2 - 40, love.graphics.getHeight() / 2 - 10)
@@ -206,6 +208,8 @@ function love.draw()
     end
 
     love.graphics.draw(background_image)
+    love.graphics.print("SCORE:", 10, 10)
+    love.graphics.print(player.score, 70, 10)
     love.graphics.draw(player.image, player.x, player.y)
 
     for _, enemy in pairs(enemies_controller.enemies) do
