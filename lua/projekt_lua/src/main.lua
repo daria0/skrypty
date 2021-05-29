@@ -57,9 +57,11 @@ function love.load()
             table.insert(player.bullets, bullet)
         end
     end
+
+    enemies_width = NUMBER_OF_ENEMIES/NUMBER_OF_ROWS * (ENEMY_WIDTH + 50) - 50
     for i =0, NUMBER_OF_ROWS do
         for j=0, NUMBER_OF_ENEMIES/NUMBER_OF_ROWS do
-            enemies_controller:spawnEnemy(j*30, i*30)
+            enemies_controller:spawnEnemy(love.graphics.getWidth()/2 - enemies_width/2 +  j*50, i*50)
         end
     end
 end
@@ -125,6 +127,7 @@ function love.update()
                 game_over = true
             end
             enemy.y = enemy.y + ENEMY_SPEED
+            enemy.x = enemy.x + math.sin(love.timer.getTime()) / 2
         end
 
         detectCollisions(enemies_controller.enemies, player.bullets)
