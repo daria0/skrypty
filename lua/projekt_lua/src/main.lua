@@ -21,6 +21,8 @@ ENEMY_Y = 0
 ENEMY_WIDTH = 28
 ENEMY_HEIGHT = 20
 ENEMY_SPEED = 1
+NUMBER_OF_ENEMIES = 20
+NUMBER_OF_ROWS = 5
 
 --in case of changing scale of the images:
 love.graphics.setDefaultFilter("nearest", "nearest")
@@ -50,8 +52,11 @@ function love.load()
             table.insert(player.bullets, bullet)
         end
     end
-    enemies_controller:spawnEnemy(0, 0)
-    enemies_controller:spawnEnemy(100, 0)
+    for i =0, NUMBER_OF_ROWS do
+        for j=0, NUMBER_OF_ENEMIES/NUMBER_OF_ROWS do
+            enemies_controller:spawnEnemy(j*30, i*30)
+        end
+    end
 end
 
 function enemies_controller:spawnEnemy(x, y)
@@ -75,10 +80,11 @@ end
 
 function detectCollisions(enemies, bullets)
     for i, enemy in pairs(enemies) do
-        for _, bullet in pairs(bullets) do
+        for j, bullet in pairs(bullets) do
             if bullet.y <= enemy.y + ENEMY_HEIGHT and bullet.x > enemy.x and bullet.x < enemy.x + ENEMY_WIDTH then
-                print("COLLISION!")
+                print("INVADER KILLED!")
                 table.remove(enemies, i)
+                table.remove(player.bullets, j)
                 love.audio.play(enemy_killed_sound)
             end
         end
