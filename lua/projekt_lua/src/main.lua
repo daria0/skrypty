@@ -109,9 +109,7 @@ end
 function clearToShoot(i)
     column_counter = 0
     indexes_to_check = {}
-    print("i to :", i)
     for j = (i - NUMBER_OF_ENEMIES_IN_ONE_ROW), NUMBER_OF_ENEMIES, NUMBER_OF_ENEMIES_IN_ONE_ROW do
-        print("SPRAWDZENIE", j)
         table.insert(indexes_to_check, j)
     end
     for _, enemy in pairs(enemies_controller.enemies) do
@@ -120,12 +118,9 @@ function clearToShoot(i)
         end
     end
 
-    print("column counter = ", column_counter)
-    print()
     if column_counter == 1 then
-        print("enemy clear to shoot, number:", i-NUMBER_OF_ENEMIES_IN_ONE_ROW)
         for _, enemy in pairs(enemies_controller.enemies) do
-            if enemy.index == i-NUMBER_OF_ENEMIES_IN_ONE_ROW then
+            if enemy.index == i - NUMBER_OF_ENEMIES_IN_ONE_ROW then
                 enemy.free_to_shoot = true
             end
         end
