@@ -11,3 +11,7 @@ Skrypt, który buduje kurnik. Gracz może parametryzować liczbę kur w kurniku.
 
 #### Gif przedstawiający budowę:
 ![Gif przedstawiający budowę](henhouse.gif "Gif przedstawiający budowę")
+
+
+### UWAGA!!!
+Nie wolno zmieniać pozycji gracza podczas trwania budowy! Zmieni to współrzędne, do których odnosi się agent budujący kurnik, co sprawi, że poszczególne części budynku będą przesunięte.
