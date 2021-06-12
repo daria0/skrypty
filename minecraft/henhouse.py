@@ -20,6 +20,51 @@ def on_on_chat():
 player.on_chat("remove", on_on_chat)
 
 
+def on_on_chat2(number_of_chickens):
+    build_walls()
+    build_roof()
+    place_details()
+    put_lights()
+    decorate_henhouse()
+    move_in(number_of_chickens)
+player.on_chat("build", on_on_chat2)
+
+
+def build_walls():
+    # floor
+    blocks.fill(PLANKS_BIRCH,
+        pos(OFFSET, -1, OFFSET),
+        pos(OFFSET + X, -1, OFFSET + Z),
+        FillOperation.REPLACE)
+
+    agent.teleport(pos(OFFSET, 0, OFFSET), EAST)
+    agent.set_slot(2)
+    agent.set_assist(DESTROY_OBSTACLES, True)
+    agent.set_assist(PLACE_ON_MOVE, True)
+    # foundations
+    for i in (X, Z, X, Z):
+        agent.set_item(BRICKS, 64, 2)
+        agent.move(FORWARD, i)
+        agent.turn(RIGHT_TURN)
+    agent.move(UP, 1)
+    # walls
+    for j in range(Y):
+        for n in (X, Z, X, Z):
+            agent.set_item(PLANKS_BIRCH, 64, 2)
+            agent.move(FORWARD, n)
+            agent.turn(RIGHT_TURN)
+        agent.move(UP, 1)
+        
+
+def build_roof():
+    # roof
+    for k in range(4):
+        blocks.fill(STONE_BRICKS,
+            pos(OFFSET + k, Y + 1 + k, OFFSET + k),
+            pos(OFFSET + X - k, Y + 1 + k, OFFSET + Z - k),
+            FillOperation.REPLACE)
+
+
 def place_details():
     # windows
     blocks.fill(BIRCH_FENCE,
@@ -56,53 +101,8 @@ def put_lights():
     agent.place(FORWARD)
     agent.teleport(pos(OFFSET+X / 2 - 1, 2, OFFSET+Z-1), SOUTH)
     agent.place(FORWARD)
-
-
-def build_walls():
-    # floor
-    blocks.fill(PLANKS_BIRCH,
-        pos(OFFSET, -1, OFFSET),
-        pos(OFFSET + X, -1, OFFSET + Z),
-        FillOperation.REPLACE)
-
-    agent.teleport(pos(OFFSET, 0, OFFSET), EAST)
-    agent.set_slot(2)
-    agent.set_assist(DESTROY_OBSTACLES, True)
-    agent.set_assist(PLACE_ON_MOVE, True)
-    # foundations
-    for i in (X, Z, X, Z):
-        agent.set_item(BRICKS, 64, 2)
-        agent.move(FORWARD, i)
-        agent.turn(RIGHT_TURN)
-    agent.move(UP, 1)
-    # walls
-    for j in range(Y):
-        for n in (X, Z, X, Z):
-            agent.set_item(PLANKS_BIRCH, 64, 2)
-            agent.move(FORWARD, n)
-            agent.turn(RIGHT_TURN)
-        agent.move(UP, 1)
-
-
-def build_roof():
-    # roof
-    for k in range(4):
-        blocks.fill(STONE_BRICKS,
-            pos(OFFSET + k, Y + 1 + k, OFFSET + k),
-            pos(OFFSET + X - k, Y + 1 + k, OFFSET + Z - k),
-            FillOperation.REPLACE)
-
-
-def on_on_chat2(number_of_chickens):
-    build_walls()
-    build_roof()
-    place_details()
-    put_lights()
-    decorate_henhouse()
-    move_in(number_of_chickens)
-player.on_chat("build", on_on_chat2)
-
-
+    
+    
 def decorate_henhouse():
     # fence
     agent.teleport(pos(OFFSET-1, 0, OFFSET+1), WEST)
